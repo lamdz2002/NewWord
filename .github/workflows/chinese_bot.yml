@@ -1,0 +1,37 @@
+name: Chinese Vocab Bot
+
+on:
+  schedule:
+    # Chạy lúc 1h, 6h, 11h, 15h UTC (tương đương 8h, 13h, 18h, 22h VN)
+    - cron: '0 1,6,11,15 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-chinese-bot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pandas requests
+
+      - name: Run Chinese Bot
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python chinese_bot.py
+        
+      - name: Commit and push state
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 Auto update Chinese bot state [skip ci]"
+          file_pattern: chinese_state.json
